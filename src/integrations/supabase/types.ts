@@ -49,6 +49,96 @@ export type Database = {
           },
         ]
       }
+      etsy_category_patterns: {
+        Row: {
+          avg_description_length: number | null
+          avg_title_length: number | null
+          bestseller_patterns: Json | null
+          category: string
+          created_at: string | null
+          emotional_trigger_frequency: Json | null
+          id: string
+          low_performer_patterns: Json | null
+          top_keywords: string[] | null
+          top_title_structures: string[] | null
+        }
+        Insert: {
+          avg_description_length?: number | null
+          avg_title_length?: number | null
+          bestseller_patterns?: Json | null
+          category: string
+          created_at?: string | null
+          emotional_trigger_frequency?: Json | null
+          id?: string
+          low_performer_patterns?: Json | null
+          top_keywords?: string[] | null
+          top_title_structures?: string[] | null
+        }
+        Update: {
+          avg_description_length?: number | null
+          avg_title_length?: number | null
+          bestseller_patterns?: Json | null
+          category?: string
+          created_at?: string | null
+          emotional_trigger_frequency?: Json | null
+          id?: string
+          low_performer_patterns?: Json | null
+          top_keywords?: string[] | null
+          top_title_structures?: string[] | null
+        }
+        Relationships: []
+      }
+      etsy_listing_data: {
+        Row: {
+          category: string | null
+          description: string | null
+          extracted_patterns: Json | null
+          fetched_at: string | null
+          id: string
+          listing_id: string
+          num_favorers: number | null
+          performance_tier: string | null
+          price: number | null
+          quantity_sold: number | null
+          shop_id: string
+          tags: string[] | null
+          title: string
+          views: number | null
+        }
+        Insert: {
+          category?: string | null
+          description?: string | null
+          extracted_patterns?: Json | null
+          fetched_at?: string | null
+          id?: string
+          listing_id: string
+          num_favorers?: number | null
+          performance_tier?: string | null
+          price?: number | null
+          quantity_sold?: number | null
+          shop_id: string
+          tags?: string[] | null
+          title: string
+          views?: number | null
+        }
+        Update: {
+          category?: string | null
+          description?: string | null
+          extracted_patterns?: Json | null
+          fetched_at?: string | null
+          id?: string
+          listing_id?: string
+          num_favorers?: number | null
+          performance_tier?: string | null
+          price?: number | null
+          quantity_sold?: number | null
+          shop_id?: string
+          tags?: string[] | null
+          title?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           comment: string | null
@@ -124,6 +214,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pinterest_insights: {
+        Row: {
+          category: string | null
+          extracted_patterns: Json | null
+          fetched_at: string | null
+          hook_type: string | null
+          id: string
+          pin_description: string
+          pin_id: string
+          pin_title: string | null
+          save_count: number | null
+          search_query: string | null
+          top_words: string[] | null
+        }
+        Insert: {
+          category?: string | null
+          extracted_patterns?: Json | null
+          fetched_at?: string | null
+          hook_type?: string | null
+          id?: string
+          pin_description: string
+          pin_id: string
+          pin_title?: string | null
+          save_count?: number | null
+          search_query?: string | null
+          top_words?: string[] | null
+        }
+        Update: {
+          category?: string | null
+          extracted_patterns?: Json | null
+          fetched_at?: string | null
+          hook_type?: string | null
+          id?: string
+          pin_description?: string
+          pin_id?: string
+          pin_title?: string | null
+          save_count?: number | null
+          search_query?: string | null
+          top_words?: string[] | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           brand_voice: string | null
@@ -163,6 +295,51 @@ export type Database = {
           product_category?: string | null
           target_buyer?: string | null
           total_rewrites?: number
+        }
+        Relationships: []
+      }
+      reddit_insights: {
+        Row: {
+          comment_count: number | null
+          extracted_insights: Json | null
+          fetched_at: string | null
+          id: string
+          insight_type: string | null
+          keywords: string[] | null
+          post_body: string | null
+          post_id: string
+          post_title: string
+          relevant_categories: string[] | null
+          subreddit: string
+          upvotes: number | null
+        }
+        Insert: {
+          comment_count?: number | null
+          extracted_insights?: Json | null
+          fetched_at?: string | null
+          id?: string
+          insight_type?: string | null
+          keywords?: string[] | null
+          post_body?: string | null
+          post_id: string
+          post_title: string
+          relevant_categories?: string[] | null
+          subreddit: string
+          upvotes?: number | null
+        }
+        Update: {
+          comment_count?: number | null
+          extracted_insights?: Json | null
+          fetched_at?: string | null
+          id?: string
+          insight_type?: string | null
+          keywords?: string[] | null
+          post_body?: string | null
+          post_id?: string
+          post_title?: string
+          relevant_categories?: string[] | null
+          subreddit?: string
+          upvotes?: number | null
         }
         Relationships: []
       }
@@ -291,6 +468,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      youtube_insights: {
+        Row: {
+          category: string | null
+          channel_name: string | null
+          comments: Json | null
+          extracted_insights: Json | null
+          fetched_at: string | null
+          id: string
+          pain_points: string[] | null
+          search_query: string | null
+          success_signals: string[] | null
+          video_id: string
+          video_title: string
+          view_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          channel_name?: string | null
+          comments?: Json | null
+          extracted_insights?: Json | null
+          fetched_at?: string | null
+          id?: string
+          pain_points?: string[] | null
+          search_query?: string | null
+          success_signals?: string[] | null
+          video_id: string
+          video_title: string
+          view_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          channel_name?: string | null
+          comments?: Json | null
+          extracted_insights?: Json | null
+          fetched_at?: string | null
+          id?: string
+          pain_points?: string[] | null
+          search_query?: string | null
+          success_signals?: string[] | null
+          video_id?: string
+          video_title?: string
+          view_count?: number | null
+        }
+        Relationships: []
       }
     }
     Views: {
