@@ -20,6 +20,7 @@ const EmailsPage = lazy(() => import('./pages/EmailsPage'));
 const HooksPage = lazy(() => import('./pages/HooksPage'));
 const ReviewsPage = lazy(() => import('./pages/ReviewsPage'));
 const CompetitorPage = lazy(() => import('./pages/CompetitorPage'));
+const InsightsPage = lazy(() => import('./pages/InsightsPage'));
 const SharePage = lazy(() => import('./pages/SharePage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -60,6 +61,7 @@ const App = () => (
                   <Route path="/hooks" element={<HooksPage />} />
                   <Route path="/reviews" element={<ReviewsPage />} />
                   <Route path="/competitor" element={<CompetitorPage />} />
+                  <Route path="/insights" element={<InsightsPage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
