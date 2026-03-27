@@ -5,8 +5,23 @@ export interface Profile {
   email: string;
   full_name: string | null;
   primary_platform: Platform | null;
+  product_category: string | null;
+  target_buyer: string | null;
+  brand_voice: string | null;
+  brand_voice_traits: BrandVoiceTraits | null;
+  brand_voice_trained_at: string | null;
   total_rewrites: number;
   created_at: string;
+}
+
+export interface BrandVoiceTraits {
+  tone: string;
+  personality: string[];
+  vocabulary: string[];
+  avoid: string[];
+  sentence_style: string;
+  emotional_register: string;
+  example_phrase?: string;
 }
 
 export interface ScoreBreakdown {
@@ -45,6 +60,8 @@ export interface Rewrite {
   original_score: number | null;
   variants: RewriteResult['variants'];
   selected_variant: number | null;
+  share_token: string | null;
+  share_views: number;
   created_at: string;
 }
 

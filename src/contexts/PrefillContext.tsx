@@ -25,9 +25,9 @@ export function PrefillProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (profile) {
       setPrimaryPlatform(profile.primary_platform || null);
-      setProductCategory((profile as Record<string, unknown>).product_category as string || '');
-      setTargetBuyer((profile as Record<string, unknown>).target_buyer as string || '');
-      setBrandVoice((profile as Record<string, unknown>).brand_voice as string || '');
+      setProductCategory(profile.product_category || '');
+      setTargetBuyer(profile.target_buyer || '');
+      setBrandVoice(profile.brand_voice || '');
     }
   }, [profile]);
 
