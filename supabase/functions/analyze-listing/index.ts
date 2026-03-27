@@ -188,6 +188,9 @@ Respond ONLY with this exact JSON structure, no other text:
       throw new Error("AI response has invalid structure");
     }
 
+    // Generate share token
+    const shareToken = Math.random().toString(36).substring(2, 14);
+
     // Save to rewrites table using service role
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
     const { error: insertError } = await supabaseAdmin.from("rewrites").insert({
@@ -199,7 +202,10 @@ Respond ONLY with this exact JSON structure, no other text:
       target_buyer,
       original_score: result.original_score,
       variants: result.variants,
+      share_token: shareToken,
     });
+
+    result.share_token = shareToken;
 
     if (insertError) {
       console.error("Insert error:", insertError);

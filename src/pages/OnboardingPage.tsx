@@ -17,6 +17,8 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [platform, setPlatform] = useState<Platform | null>(null);
+  const [category, setCategory] = useState('');
+  const [targetBuyer, setTargetBuyer] = useState('');
   const { updateProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -28,6 +30,8 @@ export default function OnboardingPage() {
     navigate('/dashboard');
   };
 
+  const totalSteps = 4;
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -36,8 +40,9 @@ export default function OnboardingPage() {
           <span className="font-display font-bold text-2xl text-foreground">.AI</span>
         </div>
 
-        <div className="flex items-center gap-2 mb-8 justify-center">
-          {[1, 2, 3].map((s) => (
+        {/* Progress bar */}
+        <div className="flex items-center gap-2 mb-2 justify-center">
+          {Array.from({ length: totalSteps }, (_, i) => i + 1).map((s) => (
             <div
               key={s}
               className={cn(
@@ -47,6 +52,7 @@ export default function OnboardingPage() {
             />
           ))}
         </div>
+        <p className="text-center text-xs text-muted-foreground mb-6">Step {step} of {totalSteps}</p>
 
         <div className="bg-card border border-border rounded-lg p-8 fade-in" key={step}>
           {step === 1 && (
@@ -99,6 +105,34 @@ export default function OnboardingPage() {
           )}
 
           {step === 3 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="font-display font-bold text-xl mb-1">What do you sell?</h2>
+                <p className="text-sm text-muted-foreground">Tell us your product category so we can pre-fill your tools.</p>
+              </div>
+              <Input
+                placeholder="e.g. handmade soy candles, sterling silver rings..."
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="h-12"
+                autoFocus
+              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Who's your target buyer?</label>
+                <Input
+                  placeholder="e.g. women 25–40 who love minimalist home décor"
+                  value={targetBuyer}
+                  onChange={(e) => setTargetBuyer(e.target.value)}
+                  className="h-12"
+                />
+              </div>
+              <Button variant="hero" className="w-full h-11" onClick={() => setStep(4)} disabled={!category.trim()}>
+                Continue <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          )}
+
+          {step === 4 && (
             <div className="space-y-6 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-2">
                 <Check className="h-8 w-8" />
