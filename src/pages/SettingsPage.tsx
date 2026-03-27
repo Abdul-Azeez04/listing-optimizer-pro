@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import { Mic, Plus, X, Loader2 } from 'lucide-react';
+import { Mic, Plus, X, Loader2, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import type { Platform, BrandVoiceTraits } from '@/types';
+import { Badge } from '@/components/ui/badge';
 
 const platforms: { value: Platform; label: string }[] = [
   { value: 'etsy', label: 'Etsy' },
@@ -231,7 +232,37 @@ export default function SettingsPage() {
         )}
       </section>
 
-      {/* Security */}
+      {/* Platform Connections */}
+      <section className="bg-card border border-border rounded-lg p-6 space-y-4">
+        <h2 className="font-display font-semibold text-lg">Platform Connections</h2>
+        <p className="text-sm text-muted-foreground">
+          Connect your selling platforms to auto-import listings and push optimized content. All connections are optional.
+        </p>
+        <div className="space-y-3">
+          {[
+            { name: 'Shopify', status: 'connected', color: 'text-[hsl(var(--shopify))]', desc: 'Connected — products available in rewriter' },
+            { name: 'Etsy', status: 'coming_soon', color: 'text-[hsl(var(--etsy))]', desc: 'Coming soon — Etsy Open API v3' },
+            { name: 'Amazon', status: 'coming_soon', color: 'text-[hsl(var(--amazon))]', desc: 'Coming soon — SP-API integration' },
+            { name: 'Facebook', status: 'coming_soon', color: 'text-blue-400', desc: 'Coming soon — Meta Business API' },
+            { name: 'Instagram', status: 'coming_soon', color: 'text-pink-400', desc: 'Coming soon — Instagram Graph API' },
+          ].map((platform) => (
+            <div key={platform.name} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
+              <div className="flex items-center gap-3">
+                <LinkIcon className={cn('h-4 w-4', platform.color)} />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{platform.name}</p>
+                  <p className="text-xs text-muted-foreground">{platform.desc}</p>
+                </div>
+              </div>
+              {platform.status === 'connected' ? (
+                <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">Connected</Badge>
+              ) : (
+                <Badge variant="outline" className="text-xs text-muted-foreground">Soon</Badge>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
       <section className="bg-card border border-border rounded-lg p-6 space-y-4">
         <h2 className="font-display font-semibold text-lg">Security</h2>
         <p className="text-sm text-muted-foreground">We'll send a reset link to your email.</p>
