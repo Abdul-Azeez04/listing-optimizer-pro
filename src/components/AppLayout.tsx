@@ -1,7 +1,7 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Sparkles, Clock, Settings, LogOut, Menu, X,
-  MessageSquare, Mail, Lightbulb, Star, Swords,
+  MessageSquare, Mail, Lightbulb, Star, Swords, Eye,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
@@ -17,6 +17,7 @@ const toolItems = [
 ];
 
 const accountItems = [
+  { label: 'Intelligence', path: '/insights', icon: Eye },
   { label: 'History', path: '/history', icon: Clock },
   { label: 'Settings', path: '/settings', icon: Settings },
 ];
