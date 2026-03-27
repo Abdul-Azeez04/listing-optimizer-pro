@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   RefreshCw, TrendingUp, TrendingDown, Eye, MessageSquare,
-  Sparkles, AlertTriangle, Lightbulb, Target, Zap,
+  Sparkles, AlertTriangle, Lightbulb, Target, Zap, Hash, Clock,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -45,6 +45,20 @@ export default function InsightsPage() {
       });
       if (error) throw error;
       return data;
+    },
+    enabled: !!user,
+  });
+
+  // Social intelligence (Facebook/Instagram)
+  const { data: socialIntel } = useQuery({
+    queryKey: ['social-intelligence'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('intelligence_cache')
+        .select('*')
+        .eq('source', 'social_media')
+        .limit(3);
+      return data || [];
     },
     enabled: !!user,
   });
@@ -292,6 +306,76 @@ export default function InsightsPage() {
                 <Button size="sm" variant="outline" onClick={() => navigate('/rewrite')} className="gap-2 mt-4">
                   <Zap className="h-4 w-4" />
                   Rewrite My Listing Using Buyer Language
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* SECTION 4.5 — Facebook/Instagram Intelligence */}
+          {socialIntel && socialIntel.length > 0 && (
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="font-display text-lg">Social Media Marketing Intel</CardTitle>
+                  <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-400 border-blue-500/30">
+                    Facebook
+                  </Badge>
+                  <Badge variant="outline" className="text-xs bg-pink-500/10 text-pink-400 border-pink-500/30">
+                    Instagram
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {socialIntel.map((intel: any, i: number) => {
+                  const d = intel.data;
+                  if (!d) return null;
+                  return (
+                    <div key={i} className="space-y-4">
+                      <Badge variant="secondary" className="capitalize text-xs">{intel.category}</Badge>
+
+                      {/* Instagram patterns */}
+                      {d.instagram_patterns?.slice(0, 3).map((p: any, j: number) => (
+                        <div key={j} className="p-3 rounded-lg bg-muted/30 border border-border">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge className="text-[10px] capitalize bg-pink-500/20 text-pink-400 border-0">
+                              {p.content_type}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-foreground">{p.pattern}</p>
+                          {p.caption_hook && (
+                            <p className="text-xs text-muted-foreground mt-1 italic">Hook: "{p.caption_hook}"</p>
+                          )}
+                        </div>
+                      ))}
+
+                      {/* Trending hashtags */}
+                      {d.trending_hashtags?.length > 0 && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                            <Hash className="h-3 w-3" /> Trending Hashtags
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {d.trending_hashtags.slice(0, 10).map((tag: string, j: number) => (
+                              <Badge key={j} variant="outline" className="text-[10px] font-normal">{tag}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Best posting times */}
+                      {d.best_posting_times?.length > 0 && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          Best times: {d.best_posting_times.join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                <Button size="sm" onClick={() => navigate('/social')} className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Generate Social Captions
                 </Button>
               </CardContent>
             </Card>
