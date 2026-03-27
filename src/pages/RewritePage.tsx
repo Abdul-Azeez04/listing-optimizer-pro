@@ -6,16 +6,24 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ShoppingBag, Loader2, ChevronDown } from 'lucide-react';
 import type { Platform, RewriteInput, RewriteResult } from '@/types';
 import { RewriteLoading } from '@/components/rewrite/RewriteLoading';
 import { RewriteOutput } from '@/components/rewrite/RewriteOutput';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchShopifyProducts, type ShopifyProduct } from '@/lib/shopify';
+import { useQuery } from '@tanstack/react-query';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const platforms: { value: Platform; label: string; colorClass: string }[] = [
-  { value: 'etsy', label: 'Etsy', colorClass: 'border-platform-etsy bg-platform-etsy/10 text-platform-etsy' },
-  { value: 'amazon', label: 'Amazon', colorClass: 'border-platform-amazon bg-platform-amazon/10 text-platform-amazon' },
-  { value: 'shopify', label: 'Shopify', colorClass: 'border-platform-shopify bg-platform-shopify/10 text-platform-shopify' },
+  { value: 'etsy', label: 'Etsy', colorClass: 'border-[hsl(var(--etsy))] bg-[hsl(var(--etsy))]/10 text-[hsl(var(--etsy))]' },
+  { value: 'amazon', label: 'Amazon', colorClass: 'border-[hsl(var(--amazon))] bg-[hsl(var(--amazon))]/10 text-[hsl(var(--amazon))]' },
+  { value: 'shopify', label: 'Shopify', colorClass: 'border-[hsl(var(--shopify))] bg-[hsl(var(--shopify))]/10 text-[hsl(var(--shopify))]' },
 ];
 
 export default function RewritePage() {
@@ -31,6 +39,24 @@ export default function RewritePage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RewriteResult | null>(null);
   const outputRef = useRef<HTMLDivElement>(null);
+
+  // Shopify product import
+  const { data: shopifyProducts, isLoading: shopifyLoading } = useQuery({
+    queryKey: ['shopify-products'],
+    queryFn: () => fetchShopifyProducts(50),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const handleImportProduct = (product: ShopifyProduct) => {
+    setInput({
+      ...input,
+      platform: 'shopify',
+      original_title: product.node.title,
+      original_description: product.node.description || '',
+      category: product.node.options?.[0]?.values?.join(', ') || '',
+    });
+    toast({ title: `Imported "${product.node.title}" from Shopify` });
+  };
 
   const descLength = input.original_description.length;
 
@@ -76,9 +102,48 @@ export default function RewritePage() {
 
   return (
     <div className="space-y-8 fade-in">
-      <div>
-        <h1 className="font-display font-bold text-3xl mb-1">New Rewrite</h1>
-        <p className="text-muted-foreground">Paste your listing and let AI optimize it for conversion.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="font-display font-bold text-3xl mb-1">New Rewrite</h1>
+          <p className="text-muted-foreground">Paste your listing and let AI optimize it for conversion.</p>
+        </div>
+
+        {/* Shopify import */}
+        {shopifyProducts && shopifyProducts.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2" disabled={shopifyLoading}>
+                <ShoppingBag className="h-4 w-4" />
+                Import from Shopify
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72 max-h-64 overflow-y-auto">
+              {shopifyProducts.map((product) => (
+                <DropdownMenuItem
+                  key={product.node.id}
+                  onClick={() => handleImportProduct(product)}
+                  className="flex items-center gap-3 cursor-pointer"
+                >
+                  {product.node.images?.edges?.[0]?.node?.url && (
+                    <img
+                      src={product.node.images.edges[0].node.url}
+                      alt={product.node.title}
+                      className="w-8 h-8 rounded object-cover shrink-0"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm truncate">{product.node.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {product.node.priceRange.minVariantPrice.currencyCode}{' '}
+                      {parseFloat(product.node.priceRange.minVariantPrice.amount).toFixed(2)}
+                    </p>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
