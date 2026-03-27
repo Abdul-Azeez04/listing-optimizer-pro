@@ -14,7 +14,128 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reported_result: string | null
+          rewrite_id: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reported_result?: string | null
+          rewrite_id: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reported_result?: string | null
+          rewrite_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_rewrite_id_fkey"
+            columns: ["rewrite_id"]
+            isOneToOne: false
+            referencedRelation: "rewrites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          primary_platform: string | null
+          total_rewrites: number
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          primary_platform?: string | null
+          total_rewrites?: number
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          primary_platform?: string | null
+          total_rewrites?: number
+        }
+        Relationships: []
+      }
+      rewrites: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          original_description: string
+          original_score: number | null
+          original_title: string
+          platform: string
+          selected_variant: number | null
+          target_buyer: string
+          user_id: string
+          variants: Json
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          original_description: string
+          original_score?: number | null
+          original_title: string
+          platform: string
+          selected_variant?: number | null
+          target_buyer: string
+          user_id: string
+          variants: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          original_description?: string
+          original_score?: number | null
+          original_title?: string
+          platform?: string
+          selected_variant?: number | null
+          target_buyer?: string
+          user_id?: string
+          variants?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rewrites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
