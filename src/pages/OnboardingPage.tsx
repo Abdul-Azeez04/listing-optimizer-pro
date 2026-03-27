@@ -36,7 +36,6 @@ export default function OnboardingPage() {
           <span className="font-display font-bold text-2xl text-foreground">.AI</span>
         </div>
 
-        {/* Progress */}
         <div className="flex items-center gap-2 mb-8 justify-center">
           {[1, 2, 3].map((s) => (
             <div
@@ -63,12 +62,7 @@ export default function OnboardingPage() {
                 className="h-12"
                 autoFocus
               />
-              <Button
-                variant="hero"
-                className="w-full h-11"
-                onClick={() => setStep(2)}
-                disabled={!name.trim()}
-              >
+              <Button variant="hero" className="w-full h-11" onClick={() => setStep(2)} disabled={!name.trim()}>
                 Continue <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
@@ -98,12 +92,7 @@ export default function OnboardingPage() {
                   </button>
                 ))}
               </div>
-              <Button
-                variant="hero"
-                className="w-full h-11"
-                onClick={() => setStep(3)}
-                disabled={!platform}
-              >
+              <Button variant="hero" className="w-full h-11" onClick={() => setStep(3)} disabled={!platform}>
                 Continue <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             </div>

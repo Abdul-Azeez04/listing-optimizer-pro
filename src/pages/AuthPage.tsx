@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,13 +8,21 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function AuthPage() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [isSignUp, setIsSignUp] = useState(searchParams.get('mode') === 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp, signIn } = useAuth();
+  const { signUp, signIn, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // If already logged in, redirect
+  const from = (location.state as { from?: string })?.from || '/dashboard';
+  if (user) {
+    navigate(from, { replace: true });
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,9 +41,10 @@ export default function AuthPage() {
 
     if (result.error) {
       toast({ title: result.error, variant: 'destructive' });
-    } else {
-      navigate(isSignUp ? '/onboarding' : '/dashboard');
+    } else if (isSignUp) {
+      toast({ title: 'Check your email to verify your account.' });
     }
+    // Auth state change listener in context handles the redirect
   };
 
   return (

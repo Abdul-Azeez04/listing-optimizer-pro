@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 import type { Platform } from '@/types';
 
 const platforms: { value: Platform; label: string }[] = [
@@ -26,10 +27,22 @@ export default function SettingsPage() {
     toast({ title: 'Profile updated.' });
   };
 
+  const handleResetPassword = async () => {
+    const email = profile?.email;
+    if (!email) return;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth`,
+    });
+    if (error) {
+      toast({ title: 'Failed to send reset email. Try again.', variant: 'destructive' });
+    } else {
+      toast({ title: 'Password reset email sent. Check your inbox.' });
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (deleteConfirm !== 'DELETE') return;
-    // Will delete from Supabase
-    toast({ title: 'Account deleted.', variant: 'destructive' });
+    toast({ title: 'Account deletion requested. Contact support to complete.', variant: 'destructive' });
     signOut();
   };
 
@@ -40,7 +53,6 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Manage your account.</p>
       </div>
 
-      {/* Profile */}
       <section className="bg-card border border-border rounded-lg p-6 space-y-4">
         <h2 className="font-display font-semibold text-lg">Profile</h2>
         <div className="space-y-2">
@@ -69,16 +81,14 @@ export default function SettingsPage() {
         <Button variant="hero" size="sm" onClick={handleSaveProfile}>Save changes</Button>
       </section>
 
-      {/* Security */}
       <section className="bg-card border border-border rounded-lg p-6 space-y-4">
         <h2 className="font-display font-semibold text-lg">Security</h2>
-        <p className="text-sm text-muted-foreground">Password changes are handled via email reset.</p>
-        <Button variant="surface" size="sm" onClick={() => toast({ title: 'Password reset email sent.' })}>
+        <p className="text-sm text-muted-foreground">We'll send a reset link to your email.</p>
+        <Button variant="surface" size="sm" onClick={handleResetPassword}>
           Reset Password
         </Button>
       </section>
 
-      {/* Danger Zone */}
       <section className="bg-card border border-destructive/30 rounded-lg p-6 space-y-4">
         <h2 className="font-display font-semibold text-lg text-destructive">Danger Zone</h2>
         {!showDelete ? (
@@ -90,11 +100,7 @@ export default function SettingsPage() {
             <p className="text-sm text-muted-foreground">
               Type <span className="font-mono text-foreground">DELETE</span> to confirm.
             </p>
-            <Input
-              value={deleteConfirm}
-              onChange={(e) => setDeleteConfirm(e.target.value)}
-              placeholder="Type DELETE"
-            />
+            <Input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="Type DELETE" />
             <div className="flex gap-2">
               <Button variant="destructive" size="sm" onClick={handleDeleteAccount} disabled={deleteConfirm !== 'DELETE'}>
                 Permanently Delete

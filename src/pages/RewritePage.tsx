@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Sparkles } from 'lucide-react';
 import type { Platform, RewriteInput, RewriteResult } from '@/types';
 import { RewriteLoading } from '@/components/rewrite/RewriteLoading';
 import { RewriteOutput } from '@/components/rewrite/RewriteOutput';
+import { supabase } from '@/integrations/supabase/client';
 
 const platforms: { value: Platform; label: string; colorClass: string }[] = [
   { value: 'etsy', label: 'Etsy', colorClass: 'border-platform-etsy bg-platform-etsy/10 text-platform-etsy' },
@@ -18,7 +19,7 @@ const platforms: { value: Platform; label: string; colorClass: string }[] = [
 ];
 
 export default function RewritePage() {
-  const { user } = useAuth();
+  const { refreshProfile } = useAuth();
   const { toast } = useToast();
   const [input, setInput] = useState<RewriteInput>({
     platform: 'etsy',
@@ -48,83 +49,26 @@ export default function RewritePage() {
     setLoading(true);
     setResult(null);
 
-    // Scroll to output on mobile
     setTimeout(() => {
       outputRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 200);
 
     try {
-      // Will call the edge function once Supabase is connected
-      // For now, simulate with demo data after a delay
-      await new Promise((r) => setTimeout(r, 8000));
-
-      const demoResult: RewriteResult = {
-        original_score: 34,
-        original_score_breakdown: {
-          hook_strength: 5,
-          emotional_triggers: 3,
-          keyword_placement: 10,
-          specificity: 8,
-          cta_clarity: 8,
-        },
-        variants: [
-          {
-            tone: 'emotional',
-            title: `✨ ${input.original_title} — A Gift They'll Never Forget`,
-            description: `Imagine unwrapping something made with love. ${input.original_description.slice(0, 200)}... This isn't just a product — it's a feeling.`,
-            bullets: [
-              'Handcrafted with premium materials for lasting quality',
-              'The perfect gift for someone who deserves something special',
-              'Each piece tells a story of artisan craftsmanship',
-              'Designed to bring joy every time it\'s used',
-              'Arrives beautifully packaged and ready to gift',
-            ],
-            tags: ['handmade', 'gift for her', 'unique gift', 'artisan', 'premium quality', 'bestseller', 'trending', 'must have', 'perfect gift', 'handcrafted'],
-            score: 82,
-            score_breakdown: { hook_strength: 18, emotional_triggers: 19, keyword_placement: 15, specificity: 14, cta_clarity: 16 },
-            improvement_summary: 'Added emotional storytelling, gift-giving angle, and sensory language to connect with buyers on a personal level.',
-          },
-          {
-            tone: 'analytical',
-            title: `${input.original_title} | Premium Grade · Certified · 5-Star Rated`,
-            description: `Specifications: ${input.original_description.slice(0, 200)}... Built to last with documented quality standards.`,
-            bullets: [
-              '100% premium materials — independently verified quality',
-              'Dimensions: precisely crafted to standard specifications',
-              '4.8★ average rating from 500+ verified buyers',
-              'Ships in protective packaging within 24 hours',
-              '30-day satisfaction guarantee — no questions asked',
-            ],
-            tags: ['premium', 'verified', 'top rated', 'quality assured', 'best seller', 'certified', 'professional', '5 star', 'guaranteed', 'fast shipping'],
-            score: 79,
-            score_breakdown: { hook_strength: 15, emotional_triggers: 12, keyword_placement: 18, specificity: 19, cta_clarity: 15 },
-            improvement_summary: 'Added concrete specifications, social proof metrics, and trust signals to appeal to detail-oriented buyers.',
-          },
-          {
-            tone: 'impulse',
-            title: `🔥 ${input.original_title} — Selling Fast · Limited Stock`,
-            description: `⚡ Over 200 sold this week. ${input.original_description.slice(0, 200)}... Don't miss out — order now before it's gone.`,
-            bullets: [
-              '🔥 TRENDING: Over 200 sold in the last 7 days',
-              '⚡ LIMITED STOCK: Only a few left at this price',
-              '⭐ Rated #1 in category by verified buyers',
-              '🚀 Ships TODAY — order in the next 2 hours',
-              '💯 100% satisfaction or your money back',
-            ],
-            tags: ['trending now', 'best seller', 'limited edition', 'hot item', 'must have', 'selling fast', 'popular', 'deal', 'top pick', 'viral'],
-            score: 85,
-            score_breakdown: { hook_strength: 19, emotional_triggers: 17, keyword_placement: 16, specificity: 15, cta_clarity: 18 },
-            improvement_summary: 'Added urgency triggers, scarcity signals, and social proof to drive immediate purchase decisions.',
-          },
-        ],
-      };
-
-      setResult(demoResult);
-    } catch {
-      toast({
-        title: 'Something went wrong generating your listing. Please try again.',
-        variant: 'destructive',
+      const { data, error } = await supabase.functions.invoke('analyze-listing', {
+        body: input,
       });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setResult(data as RewriteResult);
+      // Refresh profile to get updated total_rewrites count
+      refreshProfile();
+    } catch (err) {
+      const message = err instanceof Error && err.message.includes('timeout')
+        ? 'CONVRT.AI is taking longer than usual. Please try again.'
+        : 'Something went wrong generating your listing. Please try again.';
+      toast({ title: message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -138,9 +82,7 @@ export default function RewritePage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Input Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Platform selector */}
           <div className="space-y-2">
             <Label>Platform</Label>
             <div className="grid grid-cols-3 gap-3">
@@ -224,7 +166,6 @@ export default function RewritePage() {
           </Button>
         </form>
 
-        {/* Output */}
         <div ref={outputRef}>
           {loading && <RewriteLoading />}
           {result && !loading && <RewriteOutput result={result} input={input} />}

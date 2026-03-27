@@ -5,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { RewriteResult, RewriteInput, ScoreBreakdown } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   result: RewriteResult;
@@ -73,21 +75,37 @@ export function RewriteOutput({ result, input }: Props) {
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSent, setFeedbackSent] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const bestScore = Math.max(...result.variants.map((v) => v.score));
   const improvement = bestScore - result.original_score;
   const variant = result.variants[activeTab];
 
-  const handleFeedback = () => {
-    if (rating === 0) return;
-    // Will save to Supabase feedback table
+  const handleFeedback = async () => {
+    if (rating === 0 || !user) return;
+    // Find the rewrite ID by querying most recent
+    const { data: rewriteData } = await supabase
+      .from('rewrites')
+      .select('id')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (rewriteData) {
+      await supabase.from('feedback').insert({
+        user_id: user.id,
+        rewrite_id: rewriteData.id,
+        rating,
+        comment: feedbackText || null,
+      });
+    }
     setFeedbackSent(true);
     toast({ title: 'Thanks for your feedback!' });
   };
 
   return (
     <div className="space-y-6 fade-in">
-      {/* Score comparison */}
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-lg p-5 text-center">
           <div className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">Original</div>
@@ -103,13 +121,11 @@ export function RewriteOutput({ result, input }: Props) {
         </div>
       </div>
 
-      {/* Original breakdown */}
       <div className="bg-card border border-border rounded-lg p-5">
         <h3 className="text-sm font-medium mb-3">Original Score Breakdown</h3>
         <ScoreBreakdownView breakdown={result.original_score_breakdown} />
       </div>
 
-      {/* Variant tabs */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         <div className="flex border-b border-border">
           {result.variants.map((v, i) => (
@@ -129,7 +145,6 @@ export function RewriteOutput({ result, input }: Props) {
         </div>
 
         <div className="p-5 space-y-5" key={activeTab}>
-          {/* Score */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Conversion Score</span>
             <span className="font-mono text-2xl font-bold text-primary">{variant.score}</span>
@@ -137,33 +152,29 @@ export function RewriteOutput({ result, input }: Props) {
 
           <ScoreBreakdownView breakdown={variant.score_breakdown} />
 
-          {/* Improvement summary */}
           <div className="bg-muted/50 rounded-lg p-4">
             <p className="text-sm text-muted-foreground italic">{variant.improvement_summary}</p>
           </div>
 
-          {/* Title */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Title</Label>
+              <SectionLabel>Title</SectionLabel>
               <CopyButton text={variant.title} label="title" />
             </div>
             <p className="text-sm bg-muted/30 rounded p-3">{variant.title}</p>
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Description</Label>
+              <SectionLabel>Description</SectionLabel>
               <CopyButton text={variant.description} label="description" />
             </div>
             <p className="text-sm bg-muted/30 rounded p-3 whitespace-pre-wrap leading-relaxed">{variant.description}</p>
           </div>
 
-          {/* Bullets */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Bullet Points</Label>
+              <SectionLabel>Bullet Points</SectionLabel>
               <CopyButton text={variant.bullets.map((b, i) => `${i + 1}. ${b}`).join('\n')} label="bullets" />
             </div>
             <ol className="text-sm bg-muted/30 rounded p-3 space-y-1.5 list-decimal list-inside">
@@ -173,35 +184,26 @@ export function RewriteOutput({ result, input }: Props) {
             </ol>
           </div>
 
-          {/* Tags */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Tags</Label>
+              <SectionLabel>Tags</SectionLabel>
               <CopyButton text={variant.tags.join(', ')} label="tags" />
             </div>
             <div className="flex flex-wrap gap-2">
               {variant.tags.map((tag) => (
-                <span key={tag} className="text-xs bg-muted px-2.5 py-1 rounded">
-                  {tag}
-                </span>
+                <span key={tag} className="text-xs bg-muted px-2.5 py-1 rounded">{tag}</span>
               ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Feedback */}
       {!feedbackSent ? (
         <div className="bg-card border border-border rounded-lg p-5 space-y-4">
           <h3 className="text-sm font-medium">How did CONVRT.AI do?</h3>
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((s) => (
-              <button
-                key={s}
-                onClick={() => setRating(s)}
-                className="transition-colors"
-                aria-label={`Rate ${s} stars`}
-              >
+              <button key={s} onClick={() => setRating(s)} className="transition-colors" aria-label={`Rate ${s} stars`}>
                 <Star className={cn('h-6 w-6', s <= rating ? 'fill-primary text-primary' : 'text-muted')} />
               </button>
             ))}
@@ -226,6 +228,6 @@ export function RewriteOutput({ result, input }: Props) {
   );
 }
 
-function Label({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <span className={className}>{children}</span>;
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">{children}</span>;
 }
