@@ -510,6 +510,130 @@ export default function InsightsPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* SECTION 5 — Location-Based Trend Intelligence */}
+          {trendIntel && (
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="font-display text-lg">
+                    Market Trends — {selectedLocation}
+                  </CardTitle>
+                  <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
+                    <Globe className="h-3 w-3 mr-1" /> Live
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {/* Trending categories */}
+                {trendIntel.trending_categories?.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Trending Categories</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {trendIntel.trending_categories.slice(0, 6).map((cat: any, i: number) => (
+                        <div key={i} className="flex items-center justify-between p-2 rounded bg-muted/30 border border-border">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{cat.category}</p>
+                            <p className="text-[10px] text-muted-foreground">{cat.why}</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {cat.trend_direction === 'rising' ? (
+                              <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                            ) : cat.trend_direction === 'declining' ? (
+                              <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+                            ) : null}
+                            <span className="text-xs font-mono text-foreground">{cat.trend_strength}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upcoming events */}
+                {trendIntel.upcoming_events?.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Upcoming Opportunities</p>
+                    <div className="space-y-2">
+                      {trendIntel.upcoming_events.map((evt: any, i: number) => (
+                        <div key={i} className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-foreground">{evt.event}</span>
+                            <Badge variant="secondary" className="text-[9px]">{evt.date_range}</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{evt.opportunity}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Popular search terms */}
+                {trendIntel.buyer_preferences?.popular_search_terms?.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">Popular Search Terms in {selectedLocation}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {trendIntel.buyer_preferences.popular_search_terms.map((term: string, i: number) => (
+                        <Badge key={i} variant="outline" className="text-[10px]">{term}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {trendIntel.top_opportunity && (
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <p className="text-sm font-medium text-primary flex items-center gap-2">
+                      <Lightbulb className="h-4 w-4" /> Top Opportunity
+                    </p>
+                    <p className="text-sm text-foreground mt-1">{trendIntel.top_opportunity}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* SECTION 6 — Niche Opportunities */}
+          {nicheIntel && nicheIntel.length > 0 && (
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="font-display text-lg">Niche Opportunities</CardTitle>
+                  <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
+                    AI Analysis
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {nicheIntel.map((niche: any, i: number) => {
+                    const d = niche.data;
+                    if (!d) return null;
+                    return (
+                      <div key={i} className="p-3 rounded-lg bg-muted/30 border border-border">
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge variant="secondary" className="capitalize text-xs">{niche.category}</Badge>
+                          <span className="text-xs text-muted-foreground">{d.competition_level} competition</span>
+                        </div>
+                        <div className="text-2xl font-bold text-primary mb-1">{d.demand_score}<span className="text-xs text-muted-foreground font-normal">/100</span></div>
+                        <p className="text-xs text-muted-foreground">{d.market_gap}</p>
+                        {d.trending_sub_niches?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {d.trending_sub_niches.slice(0, 3).map((s: string, j: number) => (
+                              <Badge key={j} variant="outline" className="text-[9px]">{s}</Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <Button size="sm" variant="outline" onClick={() => navigate('/business-setup')} className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Explore Niches in Business Setup
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>
