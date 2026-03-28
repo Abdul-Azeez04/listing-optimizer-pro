@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   RefreshCw, TrendingUp, TrendingDown, Eye, MessageSquare,
-  Sparkles, AlertTriangle, Lightbulb, Target, Zap, Hash, Clock,
+  Sparkles, AlertTriangle, Lightbulb, Target, Zap, Hash, Clock, Globe, MapPin,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,7 +33,12 @@ export default function InsightsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState('United States');
 
+  const locations = [
+    'United States', 'United Kingdom', 'Canada', 'Australia',
+    'Germany', 'France', 'Nigeria', 'India', 'Brazil', 'Japan',
+  ];
   const { data: insights, isLoading, refetch } = useQuery<InsightData>({
     queryKey: ['personalized-insights'],
     queryFn: async () => {
@@ -58,6 +63,35 @@ export default function InsightsPage() {
         .select('*')
         .eq('source', 'social_media')
         .limit(3);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  // Location-based trend intelligence
+  const { data: trendIntel } = useQuery({
+    queryKey: ['trend-intelligence', selectedLocation],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('intelligence_cache')
+        .select('*')
+        .eq('source', 'trend_intelligence')
+        .eq('category', selectedLocation.toLowerCase())
+        .maybeSingle();
+      return data?.data || null;
+    },
+    enabled: !!user,
+  });
+
+  // Niche opportunities
+  const { data: nicheIntel } = useQuery({
+    queryKey: ['niche-intelligence'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('intelligence_cache')
+        .select('*')
+        .eq('source', 'niche_analysis')
+        .limit(6);
       return data || [];
     },
     enabled: !!user,
@@ -109,16 +143,28 @@ export default function InsightsPage() {
             on <span className="text-primary capitalize">{insights?.platform || 'all platforms'}</span>
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={isRefreshing || (timeSinceUpdate !== null && timeSinceUpdate < 2)}
-          className="gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="text-xs rounded border border-border bg-background px-2 py-1.5"
+            >
+              {locations.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing || (timeSinceUpdate !== null && timeSinceUpdate < 2)}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {!hasData ? (
