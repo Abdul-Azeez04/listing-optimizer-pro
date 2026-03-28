@@ -1,7 +1,7 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Sparkles, Clock, Settings, LogOut, Menu, X,
-  MessageSquare, Mail, Lightbulb, Star, Swords, Eye,
+  MessageSquare, Mail, Lightbulb, Star, Swords, Eye, Rocket,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
@@ -14,6 +14,7 @@ const toolItems = [
   { label: 'Hook Generator', path: '/hooks', icon: Lightbulb },
   { label: 'Review Responder', path: '/reviews', icon: Star },
   { label: 'Competitor Analyzer', path: '/competitor', icon: Swords },
+  { label: 'Business Setup', path: '/business-setup', icon: Rocket },
 ];
 
 const accountItems = [
