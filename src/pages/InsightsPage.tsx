@@ -78,7 +78,7 @@ export default function InsightsPage() {
         .eq('source', 'trend_intelligence')
         .eq('category', selectedLocation.toLowerCase())
         .maybeSingle();
-      return data?.data || null;
+      return (data?.data as any) || null;
     },
     enabled: !!user,
   });
